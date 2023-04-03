@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CS:GO Item Prices</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<h1>CS:GO Item Prices</h1>
+	<table id="priceTable">
+		<tbody>
+		</tbody>
+	</table>
+	<script>
+		const csvData = localStorage.getItem('priceTable');
+		const csvRows = csvData.split('\n');
+		const tableBody = document.getElementById('priceTable').getElementsByTagName('tbody')[0];
+		csvRows.forEach(row => {
+			const columns = row.split(',');
+			const itemName = columns[0];
+			const price = columns[1];
+			if (itemName !== 'Item Name') {
+				const newRow = tableBody.insertRow(-1);
+				const nameCell = newRow.insertCell(0);
+				nameCell.textContent = itemName;
+				const priceCell = newRow.insertCell(1);
+				priceCell.textContent = price;
+			}
+		});
+	</script>
+</body>
+</html>

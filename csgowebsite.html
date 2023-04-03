@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CS:GO Item Prices</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<h1>CS:GO Item Prices</h1>
+	<form id="priceForm">
+		<label for="weapon_type">Enter weapon type (e.g. AK-47, M4A4): </label>
+		<input type="text" id="weapon_type" name="weapon_type"><br><br>
+		<label for="item_name">Enter item name: </label>
+		<input type="text" id="item_name" name="item_name"><br><br>
+		<input type="submit" value="Get Prices">
+	</form>
+	<script>
+		const form = document.getElementById('priceForm');
+		form.addEventListener('submit', event => {
+			event.preventDefault();
+			const weapon_type = document.getElementById('weapon_type').value;
+			const item_name = document.getElementById('item_name').value;
+			const item_names = [
+				`${weapon_type} | ${item_name} (Battle-Scarred)`,
+				`${weapon_type} | ${item_name} (Well-Worn)`,
+				`${weapon_type} | ${item_name} (Field-Tested)`,
+				`${weapon_type} | ${item_name} (Minimal Wear)`,
+				`${weapon_type} | ${item_name} (Factory New)`
+			];
+			const csvRows = [];
+			csvRows.push(['Item Name', 'Price']);
+			const promises = item_names.map(item_name => {
+				const url = `https://steamcommunity.com/market/priceoverview/?appid=730&currency=1&market_hash_name=${item_name}`;
+				return fetch(url)
+					.then(response => response.json())
+					.then(data => {
+						if (data.success) {
+							const price = data.lowest_price;
+							csvRows.push([item_name, price]);
+							return `${item_name}: ${price}`;
+						} else {
+							csvRows.push([item_name, 'Failed to retrieve price']);
+							return `Failed to retrieve price for ${item_name}`;
+						}
+					})
+					.catch(error => {
+						csvRows.push([item_name, 'Failed to connect to Steam Community Market']);
+						return `Failed to connect to Steam Community Market`;
+					});
+			});
+			Promise.all(promises)
+				.then(messages => {
+					const csvData = csvRows.map(row => row.join(',')).join('\n');
+					const blob = new Blob([csvData], { type: 'text/csv' });
+					const url = URL.createObjectURL(blob);
+					localStorage.setItem('priceTable', csvData);
+					window.location.href = 'prices.html';
+				})
+				.catch(error => console.error(error));
+		});
+	</script>
+</body>
+</html>
